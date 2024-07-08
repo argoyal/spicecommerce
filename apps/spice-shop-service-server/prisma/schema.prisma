@@ -1,0 +1,89 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  name        String?
+  description String?
+  products    Product[]
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  name        String?
+  description String?
+  price       Float?
+  category    Category?   @relation(fields: [categoryId], references: [id])
+  categoryId  String?
+  inventory   Inventory?  @relation(name: "InventoryOnProducts", fields: [inventoryId], references: [id])
+  inventoryId String?
+  orders      Order[]
+  inventories Inventory[] @relation(name: "InventoriesOnProduct")
+  carts       Cart[]
+}
+
+model Cart {
+  id         String    @id @default(cuid())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  customer   Customer? @relation(fields: [customerId], references: [id])
+  customerId String?
+  product    Product?  @relation(fields: [productId], references: [id])
+  productId  String?
+}
+
+model Order {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  orderDate   DateTime?
+  totalAmount Float?
+  customer    Customer? @relation(fields: [customerId], references: [id])
+  customerId  String?
+  product     Product?  @relation(fields: [productId], references: [id])
+  productId   String?
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  firstName String?
+  lastName  String?
+  email     String?
+  address   String?
+  orders    Order[]
+  carts     Cart[]
+}
+
+model Inventory {
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  quantity  Int?
+  products  Product[] @relation(name: "InventoryOnProducts")
+  product   Product?  @relation(name: "InventoriesOnProduct", fields: [productId], references: [id])
+  productId String?
+}
+
+model User {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  firstName String?
+  lastName  String?
+  username  String   @unique
+  email     String?  @unique
+  password  String
+  roles     Json
+}
